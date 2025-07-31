@@ -6,14 +6,14 @@ defmodule LogicVisualizer.HOLIntegration.HOLConverter do
   HOL-compatible format suitable for formal reasoning and proof generation.
   """
 
-  alias LogicVisualizer.Parser.ExpressionParser
+  # alias LogicVisualizer.Parser.ExpressionParser  # Not used directly
 
   @doc """
   Convert a parsed expression to HOL representation.
   
   ## Examples
   
-      iex> ast = %{type: :variable, name: "A"}
+      iex> ast = %{type: :identifier, name: "A"}
       iex> HOLConverter.convert(ast)
       {:ok, %{hol_type: :variable, name: "A", type_annotation: :proposition}}
   """
@@ -26,17 +26,27 @@ defmodule LogicVisualizer.HOLIntegration.HOLConverter do
     end
   end
 
+  # Handle both :variable and :identifier as variables (parser produces :identifier, :variable for uppercase letters)
   defp do_convert(%{type: :variable, name: name}) do
-    %{
-      hol_type: :variable,
-      name: name,
-      type_annotation: :proposition
-    }
+    # Check if this is actually a predicate constant based on the name
+    if name in ["P", "Q", "R", "S", "T"] and String.length(name) == 1 do
+      %{
+        hol_type: :constant,
+        name: name,
+        type_annotation: arrow_type(:individual, :proposition)
+      }
+    else
+      %{
+        hol_type: :variable,
+        name: name,
+        type_annotation: infer_variable_type(name)
+      }
+    end
   end
 
   defp do_convert(%{type: :identifier, name: name}) do
     %{
-      hol_type: :constant,
+      hol_type: if(is_variable_name?(name), do: :variable, else: :constant),
       name: name,
       type_annotation: infer_type(name)
     }
@@ -53,7 +63,7 @@ defmodule LogicVisualizer.HOLIntegration.HOLConverter do
   defp do_convert(%{type: :negation, expr: expr}) do
     %{
       hol_type: :application,
-      function: %{hol_type: :constant, name: "¬", type_annotation: :negation_op},
+      function: %{hol_type: :constant, name: "¬", type_annotation: arrow_type(:proposition, :proposition)},
       argument: do_convert(expr)
     }
   end
@@ -74,7 +84,7 @@ defmodule LogicVisualizer.HOLIntegration.HOLConverter do
     %{
       hol_type: :abstraction,
       quantifier: q,
-      bound_variable: do_convert(var),
+      bound_variable: convert_binder(var),
       body: do_convert(expr)
     }
   end
@@ -82,7 +92,7 @@ defmodule LogicVisualizer.HOLIntegration.HOLConverter do
   defp do_convert(%{type: :lambda, var: var, expr: expr}) do
     %{
       hol_type: :lambda_abstraction,
-      bound_variable: do_convert(var),
+      bound_variable: convert_binder(var),
       body: do_convert(expr)
     }
   end
@@ -113,15 +123,15 @@ defmodule LogicVisualizer.HOLIntegration.HOLConverter do
   defp operator_symbol(:composition), do: "∘"
   defp operator_symbol(op), do: to_string(op)
 
-  defp binary_op_type(:conjunction), do: :logical_binary_op
-  defp binary_op_type(:disjunction), do: :logical_binary_op
-  defp binary_op_type(:implication), do: :logical_binary_op
-  defp binary_op_type(:biconditional), do: :logical_binary_op
-  defp binary_op_type(:equality), do: :equality_op
-  defp binary_op_type(:addition), do: :arithmetic_binary_op
-  defp binary_op_type(:multiplication), do: :arithmetic_binary_op
-  defp binary_op_type(:composition), do: :function_composition_op
-  defp binary_op_type(_), do: :unknown_binary_op
+  defp binary_op_type(:conjunction), do: arrow_type(:proposition, arrow_type(:proposition, :proposition))
+  defp binary_op_type(:disjunction), do: arrow_type(:proposition, arrow_type(:proposition, :proposition))
+  defp binary_op_type(:implication), do: arrow_type(:proposition, arrow_type(:proposition, :proposition))
+  defp binary_op_type(:biconditional), do: arrow_type(:proposition, arrow_type(:proposition, :proposition))
+  defp binary_op_type(:equality), do: arrow_type(:individual, arrow_type(:individual, :proposition))
+  defp binary_op_type(:addition), do: arrow_type(:individual, arrow_type(:individual, :individual))
+  defp binary_op_type(:multiplication), do: arrow_type(:individual, arrow_type(:individual, :individual))
+  defp binary_op_type(:composition), do: arrow_type(arrow_type(:individual, :individual), arrow_type(arrow_type(:individual, :individual), arrow_type(:individual, :individual)))
+  defp binary_op_type(_), do: :unknown
 
   defp convert_type(%{type: :variable, name: "o"}), do: :proposition
   defp convert_type(%{type: :variable, name: "i"}), do: :individual
@@ -133,11 +143,49 @@ defmodule LogicVisualizer.HOLIntegration.HOLConverter do
 
   defp infer_type(name) do
     cond do
+      # Function symbols need arrow types based on their usage context
+      name in ["f", "g", "h"] -> arrow_type(:individual, :individual)
+      # Common predicate letters - should be individual -> proposition
+      name in ["P", "Q", "R", "S", "T"] and String.length(name) == 1 -> arrow_type(:individual, :proposition)
       String.starts_with?(name, "c_") -> :individual
       String.contains?(name, "_sk_") -> :skolem_constant
-      String.length(name) == 1 and name >= "A" and name <= "Z" -> :proposition
+      # Single uppercase letters that aren't predicates are propositional variables
+      String.length(name) == 1 and name >= "A" and name <= "Z" and name not in ["P", "Q", "R", "S", "T"] -> :proposition
       String.length(name) == 1 and name >= "a" and name <= "z" -> :individual
+      # Default predicates to individual -> proposition
+      String.match?(name, ~r/^[A-Z][a-z]*$/) -> arrow_type(:individual, :proposition)
+      # Default functions to individual -> individual  
+      String.match?(name, ~r/^[a-z][a-z]*$/) -> arrow_type(:individual, :individual)
       true -> :unknown
     end
+  end
+
+  defp infer_variable_type(name) do
+    cond do
+      String.length(name) == 1 and name >= "A" and name <= "Z" -> :proposition
+      true -> :individual
+    end
+  end
+
+  defp is_variable_name?(name) do
+    String.length(name) == 1 and name >= "A" and name <= "Z"
+  end
+
+  # Helper function to create arrow types
+  defp arrow_type(from, to) do
+    %{type: :arrow, from: from, to: to}
+  end
+
+  # Convert binder variables (for quantifiers and lambda abstractions)
+  defp convert_binder(%{type: :typed_variable, var: var, type_annotation: type}) do
+    %{
+      hol_type: :typed_variable,
+      variable: do_convert(var),
+      type_annotation: convert_type(type)
+    }
+  end
+
+  defp convert_binder(var) do
+    do_convert(var)
   end
 end
