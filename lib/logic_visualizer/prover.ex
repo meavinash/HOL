@@ -351,21 +351,23 @@ defmodule LogicVisualizer.Prover do
     end
   end
 
-  # Check if two formulas are equivalent
-  defp formulas_equivalent?(f1, f2) do
-    normalize_formula(f1) == normalize_formula(f2)
-  end
+  # These functions were previously used for formula equivalence checking
+  # but are no longer needed with the current tableau implementation
+  # Keeping them commented for potential future use
+  
+  # defp formulas_equivalent?(f1, f2) do
+  #   normalize_formula(f1) == normalize_formula(f2)
+  # end
 
-  # Normalize a formula for comparison
-  defp normalize_formula(formula) do
-    case formula do
-      %{type: :negation, expr: %{type: :negation, expr: inner}} -> normalize_formula(inner)
-      %{type: :negation, expr: expr} -> %{type: :negation, expr: normalize_formula(expr)}
-      %{type: :binary_operation, operator: op, left: left, right: right} ->
-        %{type: :binary_operation, operator: op, left: normalize_formula(left), right: normalize_formula(right)}
-      _ -> formula
-    end
-  end
+  # defp normalize_formula(formula) do
+  #   case formula do
+  #     %{type: :negation, expr: %{type: :negation, expr: inner}} -> normalize_formula(inner)
+  #     %{type: :negation, expr: expr} -> %{type: :negation, expr: normalize_formula(expr)}
+  #     %{type: :binary_operation, operator: op, left: left, right: right} ->
+  #       %{type: :binary_operation, operator: op, left: normalize_formula(left), right: normalize_formula(right)}
+  #     _ -> formula
+  #   end
+  # end
 
 
   defp generate_fresh_constant(branch) do
@@ -558,13 +560,13 @@ defmodule LogicVisualizer.Prover do
     end
   end
 
-  defp build_tree_node({:gamma, var, original_expr, new_expr}) do
+  defp build_tree_node({:gamma, var, _original_expr, new_expr}) do
     "γ-Rule (∀#{var})\n" <>
     "   │\n" <>
     "   └─ Instantiated: #{new_expr}\n"
   end
 
-  defp build_tree_node({:delta, var, original_expr, new_expr}) do
+  defp build_tree_node({:delta, var, _original_expr, new_expr}) do
     "δ-Rule (∃#{var})\n" <>
     "   │\n" <>
     "   └─ Instantiated: #{new_expr}\n"

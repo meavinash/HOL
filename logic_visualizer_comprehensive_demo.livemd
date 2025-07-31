@@ -1,0 +1,283 @@
+# Logic Visualizer Demo
+
+```elixir
+# Add the current project as a dependency
+Mix.install([
+  {:logic_visualizer, path: "/Users/avinash/Desktop/Workplace"}
+])
+```
+
+## Introduction
+
+Welcome to the **Logic Visualizer** demonstration! This Livebook showcases the powerful capabilities of a comprehensive Elixir library for parsing, analyzing, and visualizing logical expressions.
+
+The Logic Visualizer provides:
+
+* **Expression Parsing**: Parse complex logical expressions with support for propositional logic, quantifiers, lambda calculus, and type annotations
+* **HOL Integration**: Convert parsed expressions to Higher Order Logic (HOL) terms for formal manipulation
+* **Tree Visualization**: Generate visual representations of expression structure and logical decomposition
+* **Step-by-Step Analysis**: Detailed processing stages with explanations
+
+Let's explore three real-world examples that demonstrate these capabilities.
+
+---
+
+## Example 1: Classical Logic Theorem Analysis - De Morgan's Laws
+
+De Morgan's laws are fundamental theorems in propositional logic that show the relationship between conjunction and disjunction under negation. This example demonstrates the library's ability to parse complex logical expressions and generate comprehensive analyses.
+
+```elixir
+# Import the main library and examples module
+alias LogicVisualizer
+alias LogicVisualizer.Examples
+alias LogicVisualizer.CLI.Main
+
+# De Morgan's First Law: ¬(P ∧ Q) ↔ (¬P ∨ ¬Q)
+# This states that "the negation of (P AND Q)" is equivalent to "(NOT P) OR (NOT Q)"
+demorgan_expression = "¬(P ∧ Q) ↔ (¬P ∨ ¬Q)"
+
+IO.puts("=== De Morgan's First Law Complete Analysis ===")
+IO.puts("Expression: #{demorgan_expression}")
+IO.puts("Description: The negation of a conjunction equals the disjunction of the negations")
+IO.puts("")
+
+# Use the comprehensive CLI analysis that includes:
+# - Detailed explanation of each component
+# - Tree structure visualization
+# - HOL representation
+# - Semantic tableaux proof with step-by-step breakdown
+result = Main.quick_analyze(demorgan_expression, true)
+IO.puts(result)
+
+# Why this example matters:
+# De Morgan's laws are fundamental to digital logic design, database query optimization,
+# and automated theorem proving. The semantic tableaux proof above demonstrates that
+# this is a tautology - it's always true regardless of the truth values of P and Q.
+# This kind of automated proof verification is crucial in:
+# - Hardware design verification
+# - Software correctness proofs
+# - Database query optimization
+# - Automated theorem proving systems
+```
+
+---
+
+## Example 2: Quantified Logic and Mathematical Reasoning
+
+This example explores the library's capability to handle quantified statements, which are essential in mathematical proofs and formal verification. We'll analyze a statement about arithmetic commutativity.
+
+```elixir
+# Mathematical theorem: Addition is commutative
+# ∀x:i. ∀y:i. x + y = y + x
+# This states: "For all integers x and y, x plus y equals y plus x"
+math_expression = "∀x:i. ∀y:i. x + y = y + x"
+
+IO.puts("=== Mathematical Commutativity Complete Analysis ===")
+IO.puts("Expression: #{math_expression}")
+IO.puts("Description: Universal quantification over addition commutativity")
+IO.puts("")
+
+# Use comprehensive analysis for the quantified mathematical expression
+result = Main.quick_analyze(math_expression, true)
+IO.puts(result)
+
+IO.puts("\n=== Mathematical Context ===")
+IO.puts("This expression encodes a fundamental algebraic property:")
+IO.puts("- The universal quantifiers range over all integers")
+IO.puts("- The nested structure shows proper variable scoping")
+IO.puts("- This is an axiom in most algebraic systems")
+IO.puts("- Essential for algebraic simplification and reasoning")
+
+# Additional analysis: Compare with related mathematical statements
+related_expressions = [
+  "∀x:i. ∀y:i. x × y = y × x",  # Multiplication commutativity
+  "∀x:i. ∀y:i. ∀z:i. x + (y + z) = (x + y) + z",  # Addition associativity
+  "∀x:i. x + 0 = x"  # Additive identity
+]
+
+IO.puts("\n=== Related Mathematical Properties ===")
+Enum.each(related_expressions, fn expr ->
+  case LogicVisualizer.parse(expr) do
+    {:ok, _parsed} ->
+      IO.puts("✓ #{expr}")
+    {:error, _} ->
+      IO.puts("✗ #{expr}")
+  end
+end)
+
+# Why this example matters:
+# Quantified logical statements are the foundation of mathematical proofs,
+# formal specifications in software engineering, and automated verification systems.
+# Understanding their structure is crucial for building reliable formal systems.
+```
+
+---
+
+## Example 3: Lambda Calculus and Higher-Order Logic
+
+This example demonstrates the library's advanced capabilities in handling lambda calculus expressions, which are fundamental to functional programming and type theory.
+
+```elixir
+# Higher-order function: Function composition
+# (f ∘ g)(x) = f(g(x)) - This defines function composition
+# We'll analyze a lambda calculus representation
+composition_expression = "λf. λg. λx. f (g x)"
+
+IO.puts("=== Lambda Calculus Function Composition Complete Analysis ===")
+IO.puts("Expression: #{composition_expression}")
+IO.puts("Description: Higher-order function implementing function composition")
+IO.puts("")
+
+# Use comprehensive analysis for the lambda expression that includes:
+# - Detailed explanation of lambda structure
+# - Tree visualization showing nested abstractions
+# - HOL representation for formal analysis
+result = Main.quick_analyze(composition_expression, true)
+IO.puts(result)
+
+IO.puts("\n=== Lambda Calculus Context ===")
+IO.puts("This expression demonstrates several key concepts:")
+IO.puts("- Nested lambda abstractions (currying)")
+IO.puts("- Higher-order functions (functions that take/return functions)")
+IO.puts("- Function application and composition")
+IO.puts("- The theoretical foundation of functional programming")
+
+# Demonstrate practical applications with related expressions
+IO.puts("\n=== Related Lambda Expressions ===")
+test_applications = [
+  "λx. f x",           # Eta abstraction
+  "λf. λx. f (f x)",   # Function application twice
+  "(λx. x) a",         # Identity function application
+  "λx. λy. x y"        # Curried application
+]
+
+Enum.each(test_applications, fn expr ->
+  case LogicVisualizer.parse(expr) do
+    {:ok, _parsed_expr} ->
+      IO.puts("✓ #{expr} - Successfully parsed")
+    {:error, error} ->
+      IO.puts("✗ #{expr} - #{error}")
+  end
+end)
+
+# Demonstrate the relationship to functional programming concepts
+IO.puts("\n=== Connection to Functional Programming ===")
+IO.puts("The lambda expression λf. λg. λx. f (g x) represents function composition.")
+IO.puts("In Elixir, this would be equivalent to:")
+IO.puts("  compose = fn f -> fn g -> fn x -> f.(g.(x)) end end end")
+IO.puts("")
+IO.puts("Usage example:")
+IO.puts("  double = fn x -> x * 2 end")
+IO.puts("  add_one = fn x -> x + 1 end")
+IO.puts("  compose.(double).(add_one).(5)  # Result: 12")
+IO.puts("")
+IO.puts("This demonstrates how lambda calculus provides the theoretical foundation")
+IO.puts("for higher-order functions in functional programming languages.")
+
+# Why this example matters:
+# Lambda calculus is the theoretical foundation of functional programming languages.
+# Understanding lambda expressions is crucial for:
+# - Compiler design and optimization
+# - Type theory and type checking
+# - Program verification and formal methods
+# - Functional programming language implementation
+```
+
+---
+
+## Library Feature Summary
+
+Let's explore some additional capabilities of the Logic Visualizer library:
+
+```elixir
+# Examples from different categories to show the library's breadth
+IO.puts("=== Logic Visualizer Feature Showcase ===")
+
+# Show different categories of expressions the library can handle
+categories = [:propositional_logic, :quantified_logic, :lambda_calculus, :theorems, :type_theory]
+
+Enum.each(categories, fn category ->
+  examples = Examples.get_by_category(category)
+  IO.puts("\n#{String.upcase(to_string(category))} (#{length(examples)} examples):")
+  
+  # Show first few examples from each category
+  examples
+  |> Enum.take(3)
+  |> Enum.each(fn example ->
+    case LogicVisualizer.parse(example.expression) do
+      {:ok, _} -> IO.puts("  ✓ #{example.name}: #{example.expression}")
+      {:error, _} -> IO.puts("  ✗ #{example.name}: #{example.expression}")
+    end
+  end)
+end)
+
+# Test some edge cases to show robustness
+IO.puts("\n=== Edge Case Handling ===")
+edge_cases = Examples.get_edge_case_examples()
+
+Enum.take(edge_cases, 5)
+|> Enum.each(fn expr ->
+  case LogicVisualizer.parse(expr) do
+    {:ok, _} ->
+      IO.puts("✓ Successfully parsed: #{expr}")
+    {:error, reason} ->
+      IO.puts("✗ Failed to parse: #{expr} (#{reason})")
+  end
+end)
+
+# Demonstrate comprehensive analysis on different expression types
+IO.puts("\n=== Comprehensive Analysis Examples ===")
+IO.puts("Testing the full analysis pipeline on various expression types:")
+
+# Test a simple tautology
+simple_tautology = "A ∨ ¬A"
+IO.puts("\n1. Simple Tautology: #{simple_tautology}")
+result = Main.quick_analyze(simple_tautology, true)
+IO.puts(String.slice(result, 0, 500) <> if String.length(result) > 500, do: "...\n[Analysis truncated for display]", else: "")
+
+# Test a logical theorem
+logical_theorem = "¬(A ∧ B) ↔ (¬A ∨ ¬B)"
+IO.puts("\n2. De Morgan's Law: #{logical_theorem}")
+IO.puts("[Full analysis available - showing parsing result only]")
+case LogicVisualizer.parse(logical_theorem) do
+  {:ok, _} -> IO.puts("✓ Successfully parsed and can be fully analyzed")
+  {:error, reason} -> IO.puts("✗ Parse failed: #{reason}")
+end
+
+# Test quantified logic
+quantified_expr = "∀x:o. P x → P x"
+IO.puts("\n3. Quantified Reflexivity: #{quantified_expr}")
+case LogicVisualizer.parse(quantified_expr) do
+  {:ok, _} -> IO.puts("✓ Successfully parsed quantified expression")
+  {:error, reason} -> IO.puts("✗ Parse failed: #{reason}")
+end
+
+IO.puts("\n=== Summary ===")
+IO.puts("The Logic Visualizer library provides comprehensive support for:")
+IO.puts("• Parsing complex logical expressions")
+IO.puts("• Converting to Higher Order Logic (HOL) representation")
+IO.puts("• Generating visual tree structures")
+IO.puts("• Step-by-step analysis and explanation")
+IO.puts("• Support for multiple logical systems and type theory")
+IO.puts("")
+IO.puts("This makes it valuable for:")
+IO.puts("• Educational tools for teaching logic")
+IO.puts("• Automated theorem proving systems")
+IO.puts("• Formal verification workflows")
+IO.puts("• Programming language research")
+IO.puts("• Mathematical proof assistants")
+```
+
+---
+
+## Conclusion
+
+This Livebook has demonstrated three key aspects of the Logic Visualizer library:
+
+1. **Classical Logic Analysis**: Parsing and visualizing fundamental logical theorems like De Morgan's laws
+2. **Quantified Mathematical Reasoning**: Handling universal and existential quantifiers in mathematical statements
+3. **Lambda Calculus and Higher-Order Logic**: Processing functional programming constructs and type theory
+
+The library's strength lies in its comprehensive approach to logical expression processing, combining parsing, formal representation (HOL), and visualization in a unified toolkit. This makes it particularly valuable for educational applications, research in formal methods, and building logic-based systems.
+
+Each example runs end-to-end, showing the complete pipeline from expression parsing through HOL conversion to visualization, demonstrating the library's practical utility for real-world logical reasoning tasks.
