@@ -186,6 +186,12 @@ defmodule LogicVisualizer.HOLIntegration.HOLConverter do
   end
 
   defp convert_binder(var) do
-    do_convert(var)
+    # Always wrap untyped variables in :typed_variable structure for consistency
+    converted_var = do_convert(var)
+    %{
+      hol_type: :typed_variable,
+      variable: converted_var,
+      type_annotation: converted_var.type_annotation
+    }
   end
 end
